@@ -484,10 +484,10 @@ const blossomGeo = new THREE.BufferGeometry();
 const blossomPos = new Float32Array(blossomCount * 3);
 const blossomColors = new Float32Array(blossomCount * 3);
 
-const colorBlossomPink = new THREE.Color(0xf472b6); // Hồng đào tươi tắn
-const colorPaleSakura  = new THREE.Color(0xf9a8d4); // Hồng phấn cánh sen dịu dàng
-const colorSoftRose    = new THREE.Color(0xfbcfe8); // Hồng pastel êm ái
-const colorWarmCream   = new THREE.Color(0xffedf2); // Trắng kem dịu mắt (thay cho trắng tinh)
+const colorBlossomPink = new THREE.Color(0xff88a5); // Hồng hoa đào tươi sáng
+const colorPaleSakura  = new THREE.Color(0xffccd7); // Hồng phấn hoa anh đào
+const colorSnowWhite   = new THREE.Color(0xfff5f8); // Trắng ánh hồng thanh khiết
+const colorGoldAccent  = new THREE.Color(0xffe680); // Vàng kim điểm xuyết ánh trăng
 
 const blossomCenters = [
   new THREE.Vector3(0, 10.5, 0),
@@ -520,14 +520,14 @@ for (let i = 0; i < blossomCount; i++) {
 
   const randC = Math.random();
   let col;
-  if (randC < 0.35) {
+  if (randC < 0.12) {
+    col = colorGoldAccent;
+  } else if (randC < 0.45) {
     col = colorBlossomPink;
-  } else if (randC < 0.70) {
+  } else if (randC < 0.78) {
     col = colorPaleSakura;
-  } else if (randC < 0.90) {
-    col = colorSoftRose;
   } else {
-    col = colorWarmCream;
+    col = colorSnowWhite;
   }
 
   blossomColors[i * 3]     = col.r;
@@ -539,12 +539,12 @@ blossomGeo.setAttribute("position", new THREE.BufferAttribute(blossomPos, 3));
 blossomGeo.setAttribute("color", new THREE.BufferAttribute(blossomColors, 3));
 
 const blossomMat = new THREE.PointsMaterial({
-  size: 0.72,
+  size: IS_MOBILE ? 0.88 : 0.78,
   vertexColors: true,
   map: SHARED_BLOSSOM_TEX,
   transparent: true,
-  opacity: 0.78,
-  blending: THREE.NormalBlending, // Chuyển sang NormalBlending để các cánh hoa giữ sắc hồng mịn, không bị cộng dồn chói gắt
+  opacity: 0.86, // Giữ nguyên độ sáng lung linh lộng lẫy, chỉ hạ nhẹ 12% so với bản gốc để vừa mắt
+  blending: THREE.AdditiveBlending, // Bật lại hiệu ứng phát quang huyền ảo
   depthWrite: false,
 });
 const blossomParticles = new THREE.Points(blossomGeo, blossomMat);
