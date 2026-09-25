@@ -17,7 +17,8 @@ const IS_LOW_END =
     return cores <= 4 || memory <= 2;
   })();
 
-const DEVICE_TIER = !IS_MOBILE ? "high" : IS_LOW_END ? "low" : "mid";
+// Mặc định mọi thiết bị hiện đại (kể cả smartphone) đều chạy cấu hình cao cấp Ultra HD
+const DEVICE_TIER = IS_LOW_END ? "mid" : "high";
 
 const CFG = {
   high: {
@@ -29,38 +30,38 @@ const CFG = {
     moonSegments: 64,
     waterSegments: 72,
     antialias: true,
-    pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    pixelRatio: Math.min(window.devicePixelRatio || 1, 2.0), // Nét căng chuẩn Retina HD
     waterEnabled: true,
     shootingEnabled: false,
     hitRadius: 1.8,
   },
   mid: {
-    blossomCount: 18000,
-    lanternCount: 22,
-    petalCount: 75,
-    starCount: 400,
-    mwCount: 2400,
+    blossomCount: 26000,
+    lanternCount: 28,
+    petalCount: 100,
+    starCount: 600,
+    mwCount: 4500,
+    moonSegments: 56,
+    waterSegments: 64,
+    antialias: true,
+    pixelRatio: Math.min(window.devicePixelRatio || 1, 1.8),
+    waterEnabled: true,
+    shootingEnabled: false,
+    hitRadius: 2.0,
+  },
+  low: {
+    blossomCount: 14000,
+    lanternCount: 18,
+    petalCount: 50,
+    starCount: 300,
+    mwCount: 1800,
     moonSegments: 36,
     waterSegments: 48,
-    antialias: false,
+    antialias: true,
     pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
     waterEnabled: true,
     shootingEnabled: false,
-    hitRadius: 2.3,
-  },
-  low: {
-    blossomCount: 8000,
-    lanternCount: 14,
-    petalCount: 35,
-    starCount: 180,
-    mwCount: 800,
-    moonSegments: 24,
-    waterSegments: 32,
-    antialias: false,
-    pixelRatio: 1,
-    waterEnabled: false,
-    shootingEnabled: false,
-    hitRadius: 2.5,
+    hitRadius: 2.4,
   },
 }[DEVICE_TIER];
 
@@ -70,30 +71,31 @@ const container = document.getElementById("webgl-container");
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x040210, 0.0072);
 
+// Góc nhìn điện thoại (FOV 48 độ) giúp đảo ngọc & vầng trăng tráng lệ, không bị méo góc rộng
 const camera = new THREE.PerspectiveCamera(
-  IS_MOBILE ? 60 : 45,
+  IS_MOBILE ? 48 : 45,
   window.innerWidth / window.innerHeight,
   0.1,
   1000,
 );
 
 const DEFAULT_CAM_POS = IS_MOBILE
-  ? new THREE.Vector3(0, 13, 44)
+  ? new THREE.Vector3(0, 9.6, 36.5)
   : new THREE.Vector3(0, 10, 40);
-const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 5.5, 0);
+const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 5.2, 0);
 
 camera.position.copy(DEFAULT_CAM_POS);
 
 const renderer = new THREE.WebGLRenderer({
-  antialias: CFG.antialias,
+  antialias: true, // Luôn bật khử răng cưa mượt mà trên cả PC & Mobile
   alpha: false,
   powerPreference: "high-performance",
-  precision: IS_MOBILE ? "mediump" : "highp",
+  precision: "highp", // Chuẩn 32-bit float sắc nét, dải màu mượt mà không bị bết
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(CFG.pixelRatio);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = IS_MOBILE ? 1.15 : 1.25;
+renderer.toneMappingExposure = 1.25; // Rực rỡ, lung linh đồng nhất giữa PC & Mobile
 renderer.shadowMap.enabled = false;
 container.appendChild(renderer.domElement);
 
@@ -477,7 +479,7 @@ for (let v = 0; v < vineCount; v++) {
 }
 
 // HẠT HOA ĐÀO 5 CÁNH CHI TIẾT (Detailed 5-Petal Blossoms using SHARED_BLOSSOM_TEX)
-const blossomCount = IS_MOBILE ? 4500 : 7000;
+const blossomCount = 7000;
 const blossomGeo = new THREE.BufferGeometry();
 const blossomPos = new Float32Array(blossomCount * 3);
 const blossomColors = new Float32Array(blossomCount * 3);
@@ -2664,7 +2666,7 @@ if (CFG.waterEnabled) {
   `;
 
   // Mở rộng quy mô hồ nước từ 52m lên 480m tạo cảm giác hồ nước phẳng lặng vô cực
-  const waterGeo = new THREE.CircleGeometry(480, IS_MOBILE ? 48 : 80);
+  const waterGeo = new THREE.CircleGeometry(480, 80);
   waterGeo.rotateX(-Math.PI / 2);
 
   waterMat = new THREE.ShaderMaterial({
@@ -3335,7 +3337,7 @@ function spawnPersonalLantern(name) {
 
 // ── 13. CÁNH HOA ĐÀO RƠI & HOA ĐĂNG NỔI TRÊN MẶT NƯỚC ────────
 // Hệ thống cánh hoa rơi 3D chao lượn trong gió đêm
-const petalCount = IS_MOBILE ? 140 : 260;
+const petalCount = 240;
 const petalGeo = new THREE.BufferGeometry();
 const petalPos = new Float32Array(petalCount * 3);
 const petalData = [];
@@ -4200,7 +4202,7 @@ function handleResize() {
     const height = window.innerHeight;
 
     camera.aspect = width / height;
-    camera.fov = width < 768 ? 60 : 45;
+    camera.fov = width < 768 ? 48 : 45;
     camera.updateProjectionMatrix();
 
     renderer.setSize(width, height);
