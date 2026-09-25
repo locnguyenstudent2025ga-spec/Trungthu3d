@@ -1,0 +1,22 @@
+{
+  "name": "Trung Thu 3D - Đêm Trăng Rằm",
+  "short_name": "Trung Thu 3D",
+  "description": "Thiệp Trung Thu 3D tương tác với trăng rằm, thỏ ngọc, lồng đèn và mặt nước lung linh.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#030208",
+  "theme_color": "#030208",
+  "icons": [
+    {
+      "src": "./assets/1.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "./assets/2.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+# Render Blueprint Specification for Trung Thu 3D Static Site
+# Website: https://render.com
+services:
+  - type: web
+    name: trung-thu-3d
+    env: static
+    buildCommand: ""
+    publishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000

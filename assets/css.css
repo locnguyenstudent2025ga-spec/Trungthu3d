@@ -1,0 +1,992 @@
+:root {
+  --primary-gold: #ffd700;
+  --secondary-gold: #ffb703;
+  --pale-gold: #fff3c2;
+  --warm-red: #e63946;
+  --deep-red: #d90429;
+  --silk-red: #8b0000;
+  --accent-pink: #ff9ebb;
+  --bg-dark: #030208;
+  --indigo-deep: #07051a;
+  --glass-bg: rgba(22, 13, 38, 0.88);
+  --glass-border: rgba(255, 215, 0, 0.38);
+  --text-cream: #fdf5e6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body,
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: "Quicksand", sans-serif;
+  color: var(--text-cream);
+  touch-action: manipulation;
+}
+
+#webgl-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* ── MÀN HÌNH INTRO & FORM GỬI LỜI CHÚC TRANG CHỦ ────────── */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: radial-gradient(ellipse at 50% 30%, #260e40 0%, #0d061c 50%, #030208 85%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.75s;
+  padding: max(20px, env(safe-area-inset-top) + 10px) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom) + 10px) max(16px, env(safe-area-inset-left));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#intro-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-inner {
+  text-align: center;
+  padding: 28px 24px 32px;
+  position: relative;
+  max-width: 540px;
+  width: 100%;
+  z-index: 2;
+  margin: auto;
+  background: rgba(18, 9, 32, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 215, 0, 0.35);
+  border-radius: 28px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 35px rgba(255, 183, 3, 0.18);
+}
+
+/* Vầng trăng mờ huyền ảo phía sau intro */
+.intro-moon-bg {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 235, 170, 0.22) 0%, rgba(255, 183, 3, 0.1) 42%, transparent 75%);
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: blur(28px);
+  pointer-events: none;
+  animation: introMoonGlow 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes introMoonGlow {
+  0% {
+    opacity: 0.55;
+    transform: translateX(-50%) scale(0.95);
+  }
+  100% {
+    opacity: 0.95;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+.intro-subtitle {
+  font-size: 12.5px;
+  letter-spacing: 3.5px;
+  color: var(--accent-pink);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 158, 187, 0.5);
+}
+
+.intro-title {
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(38px, 8vw, 56px);
+  color: var(--primary-gold);
+  text-shadow: 0 0 25px rgba(255, 215, 0, 0.65), 0 0 50px rgba(255, 183, 3, 0.35);
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+
+.intro-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(253, 245, 230, 0.88);
+  margin-bottom: 22px;
+  font-weight: 400;
+}
+
+/* FORM STYLING CHUNG */
+/* FORM STYLING CHUNG */
+.wish-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+
+.form-row-double {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 480px) {
+  .form-row-double {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+.input-group {
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.input-group label {
+  font-size: 11.5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  color: var(--secondary-gold) !important;
+  margin-bottom: 6px !important;
+  font-weight: 600 !important;
+  display: block !important;
+  text-align: left !important;
+}
+
+.input-group label .required {
+  color: #ff6b81 !important;
+}
+
+.wish-form input,
+.wish-form textarea {
+  width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  padding: 11px 16px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.2px solid rgba(255, 215, 0, 0.4) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  font-size: 14.5px !important;
+  font-family: "Quicksand", sans-serif !important;
+  outline: none !important;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.wish-form textarea {
+  resize: vertical !important;
+  min-height: 78px !important;
+  line-height: 1.5 !important;
+}
+
+.wish-form input:focus,
+.wish-form textarea:focus {
+  border-color: var(--primary-gold) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.35), inset 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.wish-form input::placeholder,
+.wish-form textarea::placeholder {
+  color: rgba(253, 245, 230, 0.45) !important;
+  font-size: 13.5px !important;
+}
+
+.char-counter {
+  text-align: right !important;
+  font-size: 11px !important;
+  color: rgba(253, 245, 230, 0.45) !important;
+  margin-top: 3px !important;
+}
+
+/* CHIPS GỢI Ý NHANH */
+.quick-wishes {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  align-items: center !important;
+  margin-top: -2px !important;
+  margin-bottom: 2px !important;
+}
+
+.quick-title {
+  font-size: 11px !important;
+  color: rgba(255, 215, 0, 0.8) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.quick-chip {
+  background: rgba(255, 215, 0, 0.12) !important;
+  border: 1px solid rgba(255, 215, 0, 0.35) !important;
+  border-radius: 16px !important;
+  color: var(--pale-gold) !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+  display: inline-block !important;
+}
+
+.quick-chip:hover {
+  background: rgba(255, 215, 0, 0.25) !important;
+  border-color: var(--primary-gold) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* BUTTONS */
+.primary-btn {
+  width: 100%;
+  padding: 13px 26px;
+  background: linear-gradient(135deg, #d90429 0%, #ff8500 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.6);
+  border-radius: 50px;
+  color: #fff;
+  font-size: 15.5px;
+  font-family: "Quicksand", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 25px rgba(217, 4, 41, 0.5), 0 0 15px rgba(255, 183, 3, 0.35);
+  touch-action: manipulation;
+  min-height: 48px;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(217, 4, 41, 0.65), 0 0 25px rgba(255, 215, 0, 0.55);
+}
+
+.primary-btn:active {
+  transform: scale(0.97);
+}
+
+.intro-skip {
+  font-size: 13px;
+  color: rgba(253, 245, 230, 0.55);
+  cursor: pointer;
+  letter-spacing: 0.8px;
+  transition: all 0.2s ease;
+  margin-top: 14px;
+  display: inline-block;
+  padding: 6px 14px;
+  touch-action: manipulation;
+}
+
+.intro-skip:hover,
+.intro-skip:active {
+  color: var(--primary-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* ── TOP ACTION BAR ────────────────────────────────────────── */
+.top-bar {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top) + 8px);
+  right: max(16px, env(safe-area-inset-right) + 8px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-badge-btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  background: rgba(22, 12, 38, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.2px solid rgba(255, 215, 0, 0.4);
+  color: var(--pale-gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  touch-action: manipulation;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.action-badge-btn span {
+  white-space: nowrap !important;
+}
+
+
+.action-badge-btn i {
+  color: var(--primary-gold);
+  font-size: 15px;
+}
+
+.action-badge-btn .badge {
+  background: var(--warm-red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+}
+
+.action-badge-btn:hover {
+  background: rgba(255, 215, 0, 0.22);
+  border-color: var(--primary-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+}
+
+.action-badge-btn:active {
+  transform: scale(0.95);
+}
+
+.action-badge-btn.active {
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.9), rgba(255, 183, 3, 0.9)) !important;
+  border-color: #ffd700 !important;
+  color: #fff !important;
+  box-shadow: 0 0 22px rgba(255, 183, 3, 0.75) !important;
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 183, 3, 0.5); transform: translateY(-1px); }
+  50% { box-shadow: 0 0 28px rgba(255, 183, 3, 0.95); transform: translateY(-3px); }
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(22, 12, 38, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.2px solid rgba(255, 215, 0, 0.35);
+  color: var(--primary-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  touch-action: manipulation;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 215, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.35);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── CLICK HINT ────────────────────────────────────────────── */
+.click-hint {
+  position: absolute;
+  bottom: max(22px, env(safe-area-inset-bottom) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: #fff9e6;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+  width: fit-content;
+  max-width: 95vw;
+  background: rgba(16, 9, 28, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 8px 24px;
+  border-radius: 40px;
+  border: 1.2px solid rgba(255, 215, 0, 0.45);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 183, 3, 0.22);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  animation: pulseHint 3s infinite alternate ease-in-out;
+}
+
+
+@keyframes pulseHint {
+  0% {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+/* ── TOAST NOTIFICATION ────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  width: 90%;
+  max-width: 440px;
+}
+
+.toast {
+  background: linear-gradient(135deg, rgba(38, 14, 60, 0.95), rgba(16, 7, 28, 0.96));
+  border: 1.5px solid var(--primary-gold);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.3);
+  color: var(--text-cream);
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-size: 13.5px;
+  text-align: center;
+  animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), toastOut 0.4s ease forwards 3.8s;
+  pointer-events: auto;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+  }
+}
+
+/* ── DRAWER OVERLAY (SLIDE CARD DÙNG CHUNG) ────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 2, 8, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer-card {
+  background: linear-gradient(160deg, rgba(32, 14, 52, 0.96) 0%, rgba(13, 6, 24, 0.98) 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.45);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 183, 3, 0.2);
+  border-radius: 26px;
+  padding: 30px 24px 28px;
+  max-width: 480px;
+  width: 100%;
+  position: relative;
+  transform: translateY(25px) scale(0.95);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.drawer-overlay.active .drawer-card {
+  transform: translateY(0) scale(1);
+}
+
+.drawer-handle {
+  display: none;
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 215, 0, 0.4);
+  border-radius: 3px;
+  margin: -14px auto 14px;
+}
+
+.drawer-title {
+  font-family: "Dancing Script", cursive;
+  font-size: 30px;
+  color: var(--primary-gold);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.drawer-subtitle {
+  font-size: 13px;
+  color: rgba(253, 245, 230, 0.75);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: var(--primary-gold);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  touch-action: manipulation;
+}
+
+.close-btn:hover {
+  background: var(--deep-red);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+/* HỘP THƯ LỜI CHÚC (INBOX) */
+.inbox-card {
+  max-width: 580px;
+}
+
+.inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.inbox-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-radius: 14px;
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.inbox-item:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: var(--primary-gold);
+  transform: translateY(-2px);
+}
+
+.inbox-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.inbox-item-from {
+  color: var(--primary-gold);
+  font-weight: 700;
+}
+
+.inbox-item-to {
+  color: var(--accent-pink);
+  font-size: 11.5px;
+}
+
+.inbox-item-msg {
+  font-size: 13.5px;
+  color: var(--text-cream);
+  line-height: 1.5;
+  font-style: italic;
+  font-family: "Playfair Display", serif;
+}
+
+/* ── THIỆP XEM LỜI CHÚC THUẦN CSS LỤA DÁT VÀNG (WISH CARD) ── */
+.wish-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 2, 8, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+}
+
+.wish-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wish-card {
+  background: linear-gradient(155deg, #2b1138 0%, #170924 60%, #0c0414 100%);
+  border: 1.8px solid var(--primary-gold);
+  box-shadow:
+    0 0 50px rgba(255, 183, 3, 0.28),
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    inset 0 0 30px rgba(255, 215, 0, 0.12);
+  border-radius: 24px;
+  padding: 38px 28px 30px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  transform: translateY(35px) scale(0.92);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #fff;
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wish-modal.active .wish-card {
+  transform: translateY(0) scale(1);
+}
+
+/* 4 GÓC HOA VĂN KIM TUYẾN DÁT VÀNG ĐÔNG DƯƠNG */
+.wish-card-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--primary-gold);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.wish-card-corner.top-left {
+  top: 10px;
+  left: 10px;
+  border-width: 2.5px 0 0 2.5px;
+}
+
+.wish-card-corner.top-right {
+  top: 10px;
+  right: 10px;
+  border-width: 2.5px 2.5px 0 0;
+}
+
+.wish-card-corner.bottom-left {
+  bottom: 10px;
+  left: 10px;
+  border-width: 0 0 2.5px 2.5px;
+}
+
+.wish-card-corner.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  border-width: 0 2.5px 2.5px 0;
+}
+
+.wish-moon-crest {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fffbe6 0%, #ffd700 60%, #cc8800 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  color: #2b1138;
+  font-size: 20px;
+}
+
+.wish-card .tag {
+  display: inline-block;
+  padding: 5px 18px;
+  border-radius: 20px;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  font-size: 11.5px;
+  color: var(--secondary-gold);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.wish-card h3 {
+  font-family: "Dancing Script", cursive;
+  font-size: 32px;
+  color: var(--primary-gold);
+  margin-bottom: 14px;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.55);
+}
+
+.wish-recipient {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  padding: 4px 16px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+
+.wish-recipient .to-label {
+  color: rgba(253, 245, 230, 0.6);
+}
+
+.wish-recipient .to-name {
+  color: var(--pale-gold);
+  font-weight: 700;
+}
+
+.wish-quote-wrap {
+  position: relative;
+  padding: 10px 16px;
+  margin: 12px 0 24px;
+}
+
+.quote-mark {
+  font-family: "Playfair Display", serif;
+  font-size: 36px;
+  color: rgba(255, 215, 0, 0.35);
+  line-height: 0;
+  position: absolute;
+}
+
+.quote-mark.left {
+  top: 10px;
+  left: 0;
+}
+
+.quote-mark.right {
+  bottom: 0;
+  right: 0;
+}
+
+.wish-card p {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #fff9ed;
+  font-style: italic;
+}
+
+.wish-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  padding-top: 14px;
+  margin-top: 10px;
+}
+
+.wish-from {
+  text-align: left;
+}
+
+.from-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  color: rgba(253, 245, 230, 0.45);
+  letter-spacing: 1px;
+  display: block;
+}
+
+.from-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-gold);
+}
+
+.wish-date {
+  font-size: 12px;
+  color: rgba(253, 245, 230, 0.5);
+  font-style: italic;
+}
+
+/* ── RESPONSIVE & MOBILE POLISH ────────────────────────────── */
+
+/* Điện thoại nhỏ (≤ 390px — iPhone SE, mini) */
+@media (max-width: 390px) {
+  .intro-inner {
+    padding: 20px 16px 24px;
+    border-radius: 20px;
+  }
+  .intro-title {
+    font-size: 34px;
+  }
+  .intro-desc {
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+  .wish-form input,
+  .wish-form textarea {
+    font-size: 13.5px;
+    padding: 9px 12px;
+  }
+  .primary-btn {
+    font-size: 14.5px;
+    padding: 11px 20px;
+    min-height: 44px;
+  }
+  .wish-card {
+    padding: 26px 16px 22px;
+    border-radius: 18px;
+  }
+  .wish-card h3 {
+    font-size: 26px;
+  }
+  .wish-card p {
+    font-size: 15px;
+  }
+}
+
+/* Mobile phổ biến (≤ 768px) */
+@media (max-width: 768px) {
+  .drawer-handle,
+  .wish-card-handle {
+    display: block;
+  }
+
+  /* Header trên điện thoại: chống bẻ dòng chữ, các nút gọn gàng thanh lịch */
+  .top-bar {
+    top: max(10px, env(safe-area-inset-top) + 6px);
+    right: max(6px, env(safe-area-inset-right) + 4px);
+    left: max(6px, env(safe-area-inset-left) + 4px);
+    justify-content: center;
+    gap: 5px;
+    max-width: calc(100vw - 12px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 2px 4px 2px;
+  }
+  .top-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .action-badge-btn {
+    height: 36px;
+    padding: 0 9px;
+    gap: 4px;
+    font-size: 11.5px;
+    border-radius: 18px;
+    white-space: nowrap !important;
+    flex-shrink: 0;
+  }
+  .action-badge-btn i {
+    font-size: 12.5px;
+  }
+  .action-badge-btn span {
+    white-space: nowrap !important;
+    display: inline-block !important;
+  }
+  .action-badge-btn .badge {
+    font-size: 9.5px;
+    padding: 1px 5px;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 13.5px;
+    flex-shrink: 0;
+  }
+
+  /* Dòng gợi ý tương tác trên điện thoại: êm ái, dễ đọc */
+  .click-hint {
+    font-size: 11.5px;
+    padding: 6px 16px;
+    letter-spacing: 0.2px;
+    max-width: 92vw;
+    white-space: normal;
+    line-height: 1.4;
+    bottom: max(14px, env(safe-area-inset-bottom) + 6px);
+  }
+}
+
+/* Điện thoại nhỏ (≤ 420px — iPhone chuẩn, SE, mini) */
+@media (max-width: 420px) {
+  .top-bar {
+    gap: 4px;
+    justify-content: center;
+  }
+  .action-badge-btn {
+    height: 35px;
+    padding: 0 7px;
+    font-size: 10.5px;
+    gap: 3px;
+  }
+  .action-badge-btn i {
+    font-size: 11.5px;
+  }
+  .action-badge-btn .badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  .icon-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 12.5px;
+  }
+}
+
+
+/* Giảm chuyển động theo chuẩn WCAG */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
