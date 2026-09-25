@@ -2922,8 +2922,8 @@ const DEFAULT_WISHES = [
 
 // Cấu hình kết nối Supabase (lưu trữ & đồng bộ Realtime toàn cầu)
 const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
-  url: "",       // Điền URL dự án Supabase, ví dụ: "https://your-id.supabase.co"
-  anonKey: "",   // Điền Public Anon Key của Supabase
+  url: "https://rdoupykzqnmdpvmzezcx.supabase.co",
+  anonKey: "sb_publishable_1hMgQqYhWj9-olHLhpDSXA_nu9miqOw",
   table: "wishes"
 };
 
