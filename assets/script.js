@@ -2892,32 +2892,17 @@ function updateShootingStars(delta, time) {
 const lanternsGroup = new THREE.Group();
 scene.add(lanternsGroup);
 
-// 1. Kho 24 lời chúc mặc định phong phú & ý nghĩa
+// Xoá sạch cache lời chúc mẫu cũ trong trình duyệt của người dùng
+try {
+  if (localStorage.getItem("tthu3d_clean_v2") !== "true") {
+    localStorage.removeItem("tthu3d_wishes");
+    localStorage.setItem("tthu3d_clean_v2", "true");
+  }
+} catch (e) {}
+
+// 1. Lời chúc ban đầu duy nhất (từ chủ trang web)
 const DEFAULT_WISHES = [
-  { from: "Chú Cuội", to: "Tất cả mọi người", message: "Chúc bạn một đêm Trung Thu ấm áp, tâm thái an nhiên tự tại, luôn mỉm cười và hạnh phúc bên những người bạn trân quý!", date: "Rằm Tháng Tám" },
-  { from: "Chị Hằng Nga", to: "Người bạn hiền", message: "Hằng Nga gửi tặng bạn ánh trăng thanh khiết nhất đêm Rằm. Nguyện chúc bạn luôn giữ được sự an yên, may mắn và vạn sự như ý nguyện!", date: "Rằm Tháng Tám" },
-  { from: "Thỏ Ngọc", to: "Gia đình yêu thương", message: "Thỏ Ngọc đang giã từng cối thuốc tiên cát tường. Chúc mọi người luôn dồi dào sức khỏe, tràn đầy sinh lực và an khang thịnh vượng!", date: "Rằm Tháng Tám" },
-  { from: "Đoàn Viên", to: "Mái ấm thân yêu", message: "Bánh nướng thơm lừng, chén trà sen thanh nhã. Chúc bạn cùng gia đình một mùa Đoàn Viên ngọt ngào, sum vầy và trọn vẹn!", date: "Rằm Tháng Tám" },
-  { from: "Minh Khang", to: "Bố Mẹ kính yêu", message: "Chúc Bố Mẹ mùa Trung Thu thật nhiều niềm vui, luôn mạnh khỏe để mãi là điểm tựa bình yên cho chúng con.", date: "Đêm Rằm" },
-  { from: "Hải Yến", to: "Người tôi thương", message: "Ánh trăng đêm nay dẫu sáng cũng chẳng bằng nụ cười của người. Chúc người luôn bình an, hạnh phúc và vạn dặm bình yên.", date: "Đêm Rằm" },
-  { from: "Thanh Tùng", to: "Đại gia đình", message: "Kính chúc ông bà bách niên giai lão, cha mẹ an khang, các cháu chăm ngoan học giỏi, cả nhà rộn rã tiếng cười sum họp!", date: "Rằm Tháng Tám" },
-  { from: "Thu Trang", to: "Bạn tri kỷ", message: "Cảm ơn vì đã luôn đồng hành cùng nhau qua bao thăng trầm. Chúc tình bạn của chúng mình mãi vẹn tròn và ấm áp như trăng rằm!", date: "Rằm Tháng Tám" },
-  { from: "Hoàng Nam", to: "Đồng nghiệp & Cộng sự", message: "Chúc các anh chị em đồng nghiệp một mùa trăng rực rỡ, công việc hanh thông, dự án bứt phá và gặt hái nhiều thành công!", date: "Rằm Tháng Tám" },
-  { from: "Bảo Ngọc", to: "Thầy Cô kính yêu", message: "Nhân dịp Tết Trung Thu, em xin kính chúc quý Thầy Cô luôn dồi dào sức khỏe, tràn đầy nhiệt huyết dìu dắt bao thế hệ học trò.", date: "Đêm Rằm" },
-  { from: "Người Xa Xứ", to: "Quê hương yêu dấu", message: "Dẫu cách trở ngàn dặm, lòng con vẫn hướng về quê nhà trong đêm trăng sáng. Chúc quê hương luôn thanh bình và ấm no!", date: "Rằm Tháng Tám" },
-  { from: "Phương Linh", to: "Bản thân tôi", message: "Chúc cho chính mình luôn giữ vững niềm tin, mạnh mẽ bước qua mọi giông bão và sớm chạm tay vào ước mơ lớn nhất!", date: "Đêm Rằm" },
-  { from: "Đức Anh", to: "Người vợ dịu hiền", message: "Cảm ơn em đã vun vén cho tổ ấm nhỏ của chúng ta. Chúc em mùa Trung Thu ngọt ngào, luôn xinh đẹp và an yên bên anh và các con.", date: "Rằm Tháng Tám" },
-  { from: "Mai Anh", to: "Em gái nhỏ", message: "Chúc bé cưng của chị nhận được nhiều quà bánh, rước đèn ông sao vui vẻ và luôn giữ nụ cười hồn nhiên trong sáng nhé!", date: "Rằm Tháng Tám" },
-  { from: "Văn Hậu", to: "Những người bạn phương xa", message: "Khoảng cách địa lý không thể ngăn được nỗi nhớ. Chúc các bạn dù ở bất cứ nơi đâu cũng có một đêm rằm ngập tràn niềm vui!", date: "Rằm Tháng Tám" },
-  { from: "Cẩm Tú", to: "Cả nhà", message: "Chúc cả gia đình luôn dồi dào tài lộc, vạn sự hanh thông, trong ấm ngoài êm, phúc lộc trường tồn!", date: "Đêm Rằm" },
-  { from: "Tuấn Kiệt", to: "Những ai đang nỗ lực", message: "Gửi đến những tâm hồn đang miệt mài phấn đấu: Chúc bạn kiên định, bền chí và tỏa sáng rực rỡ như vầng trăng tháng Tám!", date: "Rằm Tháng Tám" },
-  { from: "Lan Hương", to: "Tất cả mọi người", message: "Nguyện cầu ánh sáng nhiệm màu của đêm trăng xua tan mọi muộn phiền, mang lại bình an và may mắn cho muôn nhà!", date: "Rằm Tháng Tám" },
-  { from: "Hữu Nghĩa", to: "Đội ngũ khởi nghiệp", message: "Thử thách là đòn bẩy, khó khăn là cơ hội. Chúc tập thể chúng ta luôn đồng lòng vượt sóng lớn và chạm tới đỉnh cao!", date: "Đêm Rằm" },
-  { from: "Thùy Chi", to: "Mẹ yêu", message: "Trung Thu về, con chỉ mong Mẹ luôn khỏe mạnh, an vui mỗi ngày. Mẹ chính là vầng trăng ấm áp nhất soi sáng đời con!", date: "Rằm Tháng Tám" },
-  { from: "Quang Huy", to: "Bố kính yêu", message: "Cảm ơn Bố vì những hy sinh thầm lặng. Con chúc Bố luôn mạnh khỏe, thanh thản và tự hào về chúng con!", date: "Rằm Tháng Tám" },
-  { from: "Gia Bảo", to: "Thế giới muôn màu", message: "Cầu chúc cho thế giới luôn chan hòa tình yêu thương, không còn chiến tranh hay nghèo đói, trẻ em đều được vui đón Tết Trung Thu!", date: "Đêm Rằm" },
-  { from: "Khánh Vy", to: "Tình yêu của anh/em", message: "Trung Thu này và muôn mùa Trung Thu sau nữa, nguyện ước ta luôn nắm chặt tay nhau đi qua mọi thăng trầm cuộc sống!", date: "Rằm Tháng Tám" },
-  { from: "Người ẩn danh", to: "Bạn đọc lời chúc này", message: "Dù bạn là ai và đang ở đâu, chúc bạn hôm nay tìm thấy một niềm vui nho nhỏ, một nụ cười ấm áp và một giấc ngủ thật an lành!", date: "Rằm Tháng Tám" }
+  { from: "Lộc Nguyễn", to: "Mọi người", message: "Cảm ơn mọi người đã ghé Site. Chúc mọi người có một đêm trung thu bình an bên gia đình", date: "Rằm Tháng Tám" }
 ];
 
 // Cấu hình kết nối Supabase (lưu trữ & đồng bộ Realtime toàn cầu)
@@ -2943,25 +2928,18 @@ const WishStore = {
     return [...DEFAULT_WISHES];
   },
 
-  // Đảm bảo luôn có ít nhất minCount lời chúc cho các lồng đèn
+  // Đảm bảo luôn có ít nhất minCount lời chúc cho các lồng đèn (lặp vòng từ lời chúc thật)
   getActiveWishes(minCount = 20) {
     const list = this.getAll();
-    if (list.length >= minCount) return list;
-    // Bổ sung các lời chúc từ DEFAULT_WISHES nếu danh sách chưa đủ
-    const merged = [...list];
-    for (const w of DEFAULT_WISHES) {
-      if (merged.length >= minCount) break;
-      if (!merged.some(item => item.message === w.message)) {
-        merged.push(w);
+    if (!list || list.length === 0) return [...DEFAULT_WISHES];
+    const result = [];
+    while (result.length < minCount) {
+      for (const w of list) {
+        result.push(w);
+        if (result.length >= minCount) break;
       }
     }
-    // Nếu vẫn chưa đủ minCount, lặp vòng
-    let idx = 0;
-    while (merged.length < minCount) {
-      merged.push({ ...DEFAULT_WISHES[idx % DEFAULT_WISHES.length] });
-      idx++;
-    }
-    return merged;
+    return result;
   },
 
   add(item) {
@@ -3019,12 +2997,7 @@ const WishStore = {
           })).filter(w => w.message);
 
           if (remoteWishes.length > 0) {
-            const current = this.getAll();
-            const merged = [...remoteWishes];
-            for (const c of current) {
-              if (!merged.some(m => m.message === c.message)) merged.push(c);
-            }
-            localStorage.setItem("tthu3d_wishes", JSON.stringify(merged.slice(0, 300)));
+            localStorage.setItem("tthu3d_wishes", JSON.stringify(remoteWishes.slice(0, 300)));
             updateInboxCount();
           }
         }
