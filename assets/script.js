@@ -2917,6 +2917,161 @@ const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
 // Định danh session duy nhất của client để tránh lặp hiệu ứng cho chính mình
 const CLIENT_SESSION_ID = "client_" + Math.random().toString(36).slice(2, 9) + "_" + Date.now().toString(36);
 
+// ── BỘ LỌC KIỂM DUYỆT TỪ NGỮ TỤC TĨU & CHỐNG SPAM (CONTENT MODERATOR) ───────────
+const ContentModerator = {
+  COOLDOWN_SECONDS: 45, // Giãn cách 45 giây giữa 2 lần gửi lời chúc trên 1 thiết bị
+
+  // Từ điển từ ngữ thô tục / sinh dục / khiêu dâm có dấu
+  EXACT_PROFANITY_ACCENTED: [
+    "cặc", "lồn", "địt", "đụ", "buồi", "chịch", "dái", "bướm", "nứng", "thủ dâm",
+    "quay tay", "xuất tinh", "bú cu", "liếm lồn", "đéo", "đĩ", "phò", "óc chó", "chó đẻ"
+  ],
+
+  // Cụm từ và từ ngữ tục tĩu không dấu / viết tắt
+  UNACCENTED_PROFANITY: [
+    "con cac", "cai cac", "an cac", "ngu cac", "thang cac", "bu cu",
+    "con lon", "cai lon", "an lon", "ngu lon", "liem lon",
+    "dit nhau", "dit me", "dit ba", "dit con", "dit cu",
+    "dau buoi", "an buoi", "thang buoi",
+    "du ma", "du me", "chich nhau", "choi gai", "dcm", "vcl", "vkl", "clm",
+    "chich", "xoac", "nung", "gai goi", "fuck", "fck", "bitch", "pussy", "dick", "cunt"
+  ],
+
+  // Cụm từ dính liền chống lách luật (vd: d.i.t.n.h.a.u, c.ặ.c)
+  COLLAPSED_BAD_PATTERNS: [
+    "ditnhau", "concac", "cailon", "ditme", "chichnhau", "duma", "dcm", "vcl", "thangcac", "ngucac", "ngulon"
+  ],
+
+  removeAccents(str) {
+    if (!str) return "";
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[đĐ]/g, "d")
+      .toLowerCase();
+  },
+
+  hasProfanity(text) {
+    if (!text) return false;
+    const raw = text.toLowerCase();
+    for (const p of this.EXACT_PROFANITY_ACCENTED) {
+      const reg = new RegExp("(^|[^a-zA-Z0-9_à-ỹÀ-Ỹ])" + p + "([^a-zA-Z0-9_à-ỹÀ-Ỹ]|$)", "i");
+      if (reg.test(raw)) return true;
+    }
+
+    const norm = this.removeAccents(text);
+    const collapsed = norm.replace(/[^a-z0-9]/g, "");
+    for (const p of this.COLLAPSED_BAD_PATTERNS) {
+      if (collapsed.includes(p)) return true;
+    }
+
+    for (const p of this.UNACCENTED_PROFANITY) {
+      const reg = new RegExp("(^|[^a-z0-9])" + p + "([^a-z0-9]|$)", "i");
+      if (reg.test(norm)) return true;
+    }
+    return false;
+  },
+
+  isGibberishOrSpam(sender, recip, msg) {
+    const cleanMsg = (msg || "").trim();
+    if (cleanMsg.length < 5) return true;
+
+    // Ký tự phụ âm hoặc chữ số lặp lại liên tiếp >= 4 lần (vd: cccc, dddd, 1111)
+    if (/([bcdfghjklmnpqrstvwxz0-9])\1{3,}/i.test(cleanMsg)) return true;
+
+    // Chuỗi chỉ gồm toàn số hoặc ký tự đặc biệt vô nghĩa
+    if (/^[0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(cleanMsg)) return true;
+
+    // Keyboard smash: chuỗi từ dài không có đủ nguyên âm hợp lệ
+    const words = cleanMsg.split(/\s+/).filter(Boolean);
+    for (const w of words) {
+      const cleanW = this.removeAccents(w).replace(/[^a-z]/g, "");
+      if (cleanW.length >= 6) {
+        const vowels = cleanW.match(/[aeiouy]/g);
+        if (!vowels || vowels.length / cleanW.length < 0.15) return true;
+      }
+    }
+
+    // Các từ vô nghĩa ngắn đơn lẻ
+    if (words.length === 1 && cleanMsg.length < 9) {
+      const lower = cleanMsg.toLowerCase();
+      if (["fasfas", "sdfsdf", "dfh", "dguffyo", "asdfgh", "qwerty", "dfhfdh"].includes(lower)) return true;
+    }
+
+    return false;
+  },
+
+  checkCooldown() {
+    try {
+      const last = parseInt(localStorage.getItem("tthu3d_last_wish_time") || "0", 10);
+      const elapsed = Math.floor((Date.now() - last) / 1000);
+      if (elapsed < this.COOLDOWN_SECONDS) {
+        return { allowed: false, remaining: this.COOLDOWN_SECONDS - elapsed };
+      }
+    } catch (e) {}
+    return { allowed: true, remaining: 0 };
+  },
+
+  recordWishSent() {
+    try {
+      localStorage.setItem("tthu3d_last_wish_time", Date.now().toString());
+    } catch (e) {}
+  },
+
+  validateWish(sender, recipient, message) {
+    const cd = this.checkCooldown();
+    if (!cd.allowed) {
+      return {
+        valid: false,
+        reason: `Bạn vui lòng chờ ${cd.remaining}s nữa trước khi thắp ngọn đèn tiếp theo nhé ✨`
+      };
+    }
+
+    if (this.hasProfanity(sender) || this.hasProfanity(recipient) || this.hasProfanity(message)) {
+      return {
+        valid: false,
+        reason: "🏮 Lời chúc chứa từ ngữ chưa phù hợp với không khí Trung Thu sum vầy. Bạn vui lòng chỉnh sửa lại nhé ✨"
+      };
+    }
+
+    const cleanSender = (sender || "").trim();
+    if (cleanSender && cleanSender !== "Người ẩn danh") {
+      if (cleanSender.length < 2 || /^[0-9]+$/.test(cleanSender)) {
+        return { valid: false, reason: "Tên người gửi cần tối thiểu 2 ký tự hợp lệ." };
+      }
+    }
+
+    const cleanRecip = (recipient || "").trim();
+    if (cleanRecip && cleanRecip !== "Tất cả mọi người") {
+      if (cleanRecip.length < 2 || /^[0-9]+$/.test(cleanRecip)) {
+        return { valid: false, reason: "Tên người nhận cần tối thiểu 2 ký tự hợp lệ." };
+      }
+    }
+
+    const cleanMsg = (message || "").trim();
+    if (cleanMsg.length < 5) {
+      return { valid: false, reason: "Lời chúc cần có độ dài tối thiểu 5 ký tự để gửi trọn vẹn yêu thương." };
+    }
+
+    if (this.isGibberishOrSpam(cleanSender, cleanRecip, cleanMsg)) {
+      return { valid: false, reason: "Vui lòng nhập lời chúc có ý nghĩa trước khi thắp lồng đèn nhé ✨" };
+    }
+
+    return { valid: true };
+  },
+
+  // Bộ lọc an toàn khi hiển thị (bảo vệ kép phía người xem)
+  isCleanForDisplay(item) {
+    if (!item) return false;
+    const s = item.from || item.sender || "";
+    const r = item.to || item.recipient || "";
+    const m = item.message || "";
+    if (this.hasProfanity(s) || this.hasProfanity(r) || this.hasProfanity(m)) return false;
+    if (this.isGibberishOrSpam(s, r, m)) return false;
+    return true;
+  }
+};
+
 // 2. Module quản lý kho lời chúc WishStore (LocalStorage + Supabase sync & Realtime)
 const WishStore = {
   getAll() {
@@ -2978,7 +3133,7 @@ const WishStore = {
     return all;
   },
 
-  // Đồng bộ lời chúc từ Supabase khi mở web
+  // Đồng bộ lời chúc từ Supabase khi mở web (lọc bỏ 100% từ ngữ thô tục & spam)
   async syncFromSupabase() {
     if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) return;
     try {
@@ -2996,7 +3151,7 @@ const WishStore = {
             to: d.recipient || "Tất cả mọi người",
             message: d.message || "",
             date: "Rằm Tháng Tám"
-          })).filter(w => w.message);
+          })).filter(w => w.message && ContentModerator.isCleanForDisplay(w));
 
           if (remoteWishes.length > 0) {
             localStorage.setItem("tthu3d_wishes", JSON.stringify(remoteWishes.slice(0, 300)));
@@ -3029,6 +3184,9 @@ const WishStore = {
               message: row.message || "",
               date: "Rằm Tháng Tám"
             };
+
+            // Kiểm duyệt an toàn: Nếu lời chúc chứa từ bậy hoặc spam -> Bỏ qua ngay lập tức!
+            if (!ContentModerator.isCleanForDisplay(remoteWish)) return;
 
             // Thêm vào kho lời chúc
             const all = WishStore.getAll();
@@ -3705,10 +3863,13 @@ if (sceneSubmitBtn) {
     const rName = (rInput && rInput.value ? rInput.value.trim() : "") || "Tất cả mọi người";
     const msg   = mInput && mInput.value ? mInput.value.trim() : "";
 
-    if (!msg) {
-      alert("Vui lòng nhập lời chúc của bạn trước khi thả đèn!");
+    const check = ContentModerator.validateWish(sName, rName, msg);
+    if (!check.valid) {
+      showToast(check.reason);
       return;
     }
+
+    ContentModerator.recordWishSent();
 
     const newWish = { from: sName, to: rName, message: msg, date: "Rằm Tháng Tám" };
     WishStore.add(newWish);
@@ -3971,12 +4132,16 @@ if (introSubmitBtn) {
     const s = senderInput ? senderInput.value.trim() : "";
     const r = recipientInput ? recipientInput.value.trim() : "";
     const m = wishMessageInput ? wishMessageInput.value.trim() : "";
-    if (!m) {
-      alert("Vui lòng nhập lời chúc của bạn trước khi thắp lồng đèn!");
-      return;
-    }
     const finalSender = s || "Người ẩn danh";
     const finalRecipient = r || "Tất cả mọi người";
+
+    const check = ContentModerator.validateWish(finalSender, finalRecipient, m);
+    if (!check.valid) {
+      alert(check.reason);
+      return;
+    }
+
+    ContentModerator.recordWishSent();
     launchScene(finalSender, finalRecipient, m);
   });
 }
